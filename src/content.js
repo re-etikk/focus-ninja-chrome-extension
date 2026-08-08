@@ -26,7 +26,24 @@ function initContent() {
 }
 
 function pingBackground() {
-  chrome.runtime.sendMessage({ type: "tab:evaluateCurrent" }).catch(() => undefined);
+  safeSendMessage({ type: "tab:evaluateCurrent" });
+}
+
+// chrome.runtime.sendMessage throws SYNCHRONOUSLY (not just a rejected
+// promise) once the extension context is invalidated — e.g. right after
+// the extension is reloaded from chrome://extensions while this tab was
+// already open. A plain .catch() doesn't catch that. This wraps every call
+// so an old, orphaned content script tab never spams the console — the fix
+// for the user is simply refreshing that tab after a reload, but the page
+// itself should never crash over it.
+function safeSendMessage(message) {
+  try {
+    if (!chrome?.runtime?.id) return; // context already gone
+    chrome.runtime.sendMessage(message).catch(() => undefined);
+  } catch (error) {
+    // Extension was reloaded/updated while this tab's content script was
+    // still alive — nothing to do here except stay quiet.
+  }
 }
 
 function showOverlay(payload) {
@@ -116,21 +133,17 @@ function buildOverlay() {
   `;
 
   panel.querySelector("[data-action='continue']").addEventListener("click", () => {
-    chrome.runtime
-      .sendMessage({ type: "session:continueGrace" })
-      .then(() => hideOverlay())
-      .catch(() => undefined);
+    safeSendMessage({ type: "session:continueGrace" });
+    hideOverlay();
   });
 
   panel.querySelector("[data-action='mute']").addEventListener("click", () => {
-    chrome.runtime.sendMessage({ type: "audio:stop" }).catch(() => undefined);
+    safeSendMessage({ type: "audio:stop" });
   });
 
   panel.querySelector("[data-action='stop']").addEventListener("click", () => {
-    chrome.runtime
-      .sendMessage({ type: "session:stop" })
-      .then(() => hideOverlay())
-      .catch(() => undefined);
+    safeSendMessage({ type: "session:stop" });
+    hideOverlay();
   });
 
   overlay.appendChild(panel);

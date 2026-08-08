@@ -391,7 +391,7 @@ async function registerManualUser(payload) {
   authListenerSuppressed = true;
   try {
     const credential = await firebaseAuth.createUserWithEmailAndPassword(email, password);
-    await ensureFirebaseProfile(credential.user, {
+    await safeEnsureFirebaseProfile(credential.user, {
       name,
       email,
       dob,
@@ -461,7 +461,7 @@ async function upsertGoogleUser(payload) {
     const result = await firebaseAuth.signInWithCredential(credential);
     const user = result.user;
 
-    await ensureFirebaseProfile(user, {
+    await safeEnsureFirebaseProfile(user, {
       name: name || user.displayName || "",
       email: email || user.email || "",
       dob,
@@ -605,7 +605,7 @@ async function updateProfile(payload) {
       await firebaseAuth.currentUser.updateProfile(profileUpdates);
     }
 
-    const profile = await ensureFirebaseProfile(firebaseAuth.currentUser, {
+    const profile = await safeEnsureFirebaseProfile(firebaseAuth.currentUser, {
       name: name || firebaseAuth.currentUser.displayName || "",
       email: firebaseAuth.currentUser.email || "",
       dob: dob || "",
@@ -1686,6 +1686,35 @@ async function syncAuthStateFromFirebaseUser(user) {
     await syncBadge();
   } catch (error) {
     console.error("Failed to sync Firebase auth state:", error);
+  }
+}
+
+// Wraps ensureFirebaseProfile so a Firestore permission/rules problem (e.g.
+// firestore.rules was never deployed — see README Step 7) can NEVER turn an
+// otherwise-successful sign-in into a scary "login failed" error. Firebase
+// Auth's own session is independent of Firestore; if the profile write
+// fails, we log it and fall back to building the profile from the auth
+// user object directly (name/email/photo are already available there for
+// Google sign-in) instead of blocking the whole login.
+async function safeEnsureFirebaseProfile(user, patch = {}) {
+  try {
+    return await ensureFirebaseProfile(user, patch);
+  } catch (error) {
+    console.error("[StudyPhoneDetector] Firestore profile sync failed (auth itself still succeeded):", error);
+    await appendEvent(
+      "warning",
+      "Signed in, but couldn't save your profile to Firestore — check that firestore.rules is deployed (README Step 7)."
+    );
+    return {
+      id: patch.id || user?.uid || crypto.randomUUID(),
+      provider: patch.provider || "firebase",
+      name: patch.name || user?.displayName || "",
+      email: patch.email || user?.email || "",
+      dob: patch.dob || "",
+      photoUrl: patch.photoUrl || user?.photoURL || "",
+      createdAt: Date.now(),
+      lastLoginAt: Date.now()
+    };
   }
 }
 

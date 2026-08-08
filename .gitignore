@@ -17,6 +17,7 @@ src/firebase-config.js
 
 # Firebase local files
 .firebase/
+.firebaserc
 
 # Firebase service account credentials
 serviceAccountKey.json
@@ -25,3 +26,4 @@ firebase-adminsdk-*.json
 # OS files
 .DS_Store
 Thumbs.db
+
