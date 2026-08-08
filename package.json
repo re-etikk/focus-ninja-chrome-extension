@@ -1,0 +1,22 @@
+{
+  "name": "study-phone-detector-pro",
+  "version": "2.1.0",
+  "private": true,
+  "description": "Study Phone Detector Pro — Chrome extension bundled with the official Firebase SDK for Manifest V3.",
+  "type": "module",
+  "scripts": {
+    "build": "node esbuild.config.mjs",
+    "watch": "node esbuild.config.mjs --watch",
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\""
+  },
+  "dependencies": {
+    "firebase": "^10.13.0",
+    "@tensorflow/tfjs": "^4.20.0",
+    "@tensorflow-models/coco-ssd": "^2.2.3",
+    "jspdf": "^2.5.2"
+  },
+  "devDependencies": {
+    "esbuild": "^0.23.1",
+    "fs-extra": "^11.2.0"
+  }
+}

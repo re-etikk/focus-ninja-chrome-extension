@@ -1,0 +1,50 @@
+{
+  "manifest_version": 3,
+  "name": "Study Phone Detector Pro",
+  "description": "Advanced focus assistant with Firebase login, study session tracking, audio alerts, and smart site controls.",
+  "version": "2.1.0",
+  "minimum_chrome_version": "114",
+  "permissions": [
+    "storage",
+    "tabs",
+    "alarms",
+    "activeTab",
+    "offscreen",
+    "notifications",
+    "identity"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "oauth2": {
+    "client_id": "YOUR_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com",
+    "scopes": ["openid", "email", "profile"]
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Study Phone Detector Pro",
+    "default_popup": "popup.html"
+  },
+  "icons": {
+    "128": "icon.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["assets/*", "icon.png"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://securetoken.googleapis.com https://accounts.google.com https://storage.googleapis.com https://tfhub.dev;"
+  }
+}

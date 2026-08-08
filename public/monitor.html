@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Study Monitor</title>
+    <link rel="stylesheet" href="monitor.css" />
+  </head>
+  <body>
+    <main class="monitor-shell">
+      <section class="monitor-hero">
+        <div>
+          <p class="eyebrow">Monitor Mode</p>
+          <h1>Study Monitor Room</h1>
+          <p id="monitorHeadline">Camera preview and live focus controls for disciplined study sessions.</p>
+        </div>
+        <div class="monitor-hero-actions">
+          <div id="monitorStatePill" class="state-pill idle">Idle</div>
+          <button id="monitorLogoutBtn" class="ghost-btn hero-ghost-btn">Log out</button>
+        </div>
+      </section>
+
+      <section class="monitor-grid">
+        <article class="camera-card">
+          <div class="card-header">
+            <div>
+              <h2>Camera Preview</h2>
+              <p>Nothing is uploaded. This page uses your local webcam only.</p>
+            </div>
+            <button id="toggleCameraBtn" class="ghost-btn">Start Camera</button>
+          </div>
+          <div class="video-frame">
+            <video id="cameraPreview" autoplay muted playsinline></video>
+            <div id="cameraPlaceholder" class="video-placeholder">Camera preview is off.</div>
+            <div id="detectionBadge" class="detection-badge idle">Detection paused</div>
+          </div>
+        </article>
+
+        <article class="insight-card">
+          <div class="card-header">
+            <div>
+              <h2>Live Insights</h2>
+              <p>Your current focus status at a glance</p>
+            </div>
+          </div>
+          <div class="insight-grid">
+            <div class="insight-box">
+              <span>Focused Today</span>
+              <strong id="monitorFocusedToday">0m</strong>
+            </div>
+            <div class="insight-box">
+              <span>Session Time</span>
+              <strong id="monitorSessionTime">0m</strong>
+            </div>
+            <div class="insight-box">
+              <span>Distraction Time</span>
+              <strong id="monitorDistraction">0m</strong>
+            </div>
+            <div class="insight-box">
+              <span>Violations</span>
+              <strong id="monitorViolations">0</strong>
+            </div>
+            <div class="insight-box">
+              <span>Phone Detections</span>
+              <strong id="monitorPhoneDetections">0</strong>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="pomodoro-card">
+        <div class="card-header">
+          <div>
+            <h2>Pomodoro Cycle</h2>
+            <p>Automatic focus/break rhythm based on your active preset.</p>
+          </div>
+          <span id="pomodoroCycleLabel" class="cycle-pill">Cycle 1</span>
+        </div>
+        <div class="pomodoro-body">
+          <div class="pomodoro-ring-wrap">
+            <svg viewBox="0 0 120 120" class="pomodoro-ring">
+              <circle cx="60" cy="60" r="52" class="ring-track" />
+              <circle cx="60" cy="60" r="52" class="ring-fill" id="pomodoroRingFill" />
+            </svg>
+            <div class="pomodoro-ring-center">
+              <strong id="pomodoroTimeLeft">--:--</strong>
+              <span id="pomodoroPhaseLabel">Focus</span>
+            </div>
+          </div>
+          <div class="pomodoro-side">
+            <p id="pomodoroStatusText" class="pomodoro-status-text">Start a session to begin your Pomodoro cycle.</p>
+            <button id="skipBreakBtn" class="ghost-btn" style="display:none;">Skip break</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="control-card">
+        <div class="card-header">
+          <div>
+            <h2>Session Controls</h2>
+            <p>Start, pause, resume, stop, and handle alert audio from one place.</p>
+          </div>
+        </div>
+        <div class="control-grid">
+          <button id="monitorStartBtn" class="primary-btn">Start Session</button>
+          <button id="monitorPauseBtn" class="secondary-btn">Pause</button>
+          <button id="monitorResumeBtn" class="secondary-btn">Resume</button>
+          <button id="monitorStopBtn" class="danger-btn">Stop</button>
+          <button id="monitorAudioBtn" class="ghost-btn">Test Audio</button>
+          <button id="monitorAudioStopBtn" class="ghost-btn">Stop Audio</button>
+        </div>
+        <div class="insight-strip">
+          <span id="monitorInsightTitle">Ready for a focused block.</span>
+          <span id="monitorInsightDetail">Your assistant is waiting for the next signal.</span>
+        </div>
+      </section>
+
+      <section class="monitor-grid lower-grid">
+        <article class="timeline-card">
+          <div class="card-header">
+            <div>
+              <h2>Allowed Sites</h2>
+              <p>Websites currently permitted in focus mode</p>
+            </div>
+            <button id="addCurrentTabBtn" class="ghost-btn">+ Add current tab</button>
+          </div>
+          <div id="monitorSites" class="site-stack"></div>
+        </article>
+
+        <article class="timeline-card">
+          <div class="card-header">
+            <div>
+              <h2>Recent Activity</h2>
+              <p>Extension event timeline</p>
+            </div>
+          </div>
+          <div id="monitorActivity" class="activity-stack"></div>
+        </article>
+      </section>
+
+      <section class="monitor-grid lower-grid">
+        <article class="timeline-card">
+          <div class="card-header">
+            <div>
+              <h2>Study Tasks</h2>
+              <p>Quick to-dos for this session</p>
+            </div>
+          </div>
+          <form id="monitorTodoForm" class="inline-form">
+            <input id="monitorTodoInput" type="text" maxlength="200" placeholder="Add a task…" />
+            <button type="submit" class="secondary-btn">Add</button>
+          </form>
+          <div id="monitorTodoList" class="todo-list"></div>
+        </article>
+
+        <article class="timeline-card">
+          <div class="card-header">
+            <div>
+              <h2>Weekly Pulse</h2>
+              <p>Focus vs. distraction, last 7 days</p>
+            </div>
+            <div class="header-actions">
+              <button id="exportDataBtn" class="ghost-btn">Export JSON</button>
+              <button id="exportPdfBtn" class="ghost-btn">Export PDF</button>
+            </div>
+          </div>
+          <div id="monitorWeekChart" class="week-chart"></div>
+        </article>
+      </section>
+    </main>
+
+    <script src="monitor.js"></script>
+  </body>
+</html>

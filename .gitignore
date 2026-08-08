@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Local Firebase config
+src/firebase-config.js
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# Firebase local files
+.firebase/
+
+# Firebase service account credentials
+serviceAccountKey.json
+firebase-adminsdk-*.json
+
+# OS files
+.DS_Store
+Thumbs.db
