@@ -246,10 +246,22 @@ async function handleMessage(message, sender) {
       await reevaluateActiveTab();
       return { state: await getAppState() };
     case "todo:add":
-      await addTodo(message.payload?.text || "");
+      await addTodo(message.payload || {});
+      return { state: await getAppState() };
+    case "todo:update":
+      await updateTodo(message.payload || {});
       return { state: await getAppState() };
     case "todo:toggle":
       await toggleTodo(message.payload?.id || "");
+      return { state: await getAppState() };
+    case "todo:startTimer":
+      await startTodoTimer(message.payload?.id || "");
+      return { state: await getAppState() };
+    case "todo:pauseTimer":
+      await pauseTodoTimer(message.payload?.id || "");
+      return { state: await getAppState() };
+    case "todo:resetTimer":
+      await resetTodoTimer(message.payload?.id || "");
       return { state: await getAppState() };
     case "todo:remove":
       await removeTodo(message.payload?.id || "");
@@ -313,7 +325,7 @@ async function ensureDefaults() {
     recentEvents: Array.isArray(snapshot.stats?.recentEvents) ? snapshot.stats.recentEvents : [],
     sessionHistory: Array.isArray(snapshot.stats?.sessionHistory) ? snapshot.stats.sessionHistory : []
   };
-  const todos = Array.isArray(snapshot.todos) ? snapshot.todos : [];
+  const todos = normalizeTodos(snapshot.todos);
 
   await chrome.storage.local.set({ settings, auth, session, stats, todos });
 }
@@ -338,7 +350,7 @@ async function getAppState() {
     settings,
     session: liveSession,
     user: currentUser,
-    todos: [...(todos || [])].sort((a, b) => Number(a.done) - Number(b.done) || b.createdAt - a.createdAt),
+    todos: normalizeTodos(todos).sort((a, b) => Number(a.done) - Number(b.done) || b.createdAt - a.createdAt),
     insights: buildInsights({
       today: todayStats,
       streak,
@@ -689,45 +701,116 @@ async function removeAllowedSite(site) {
   await appendEvent("info", `${host} removed from allowed sites.`);
 }
 
-async function addTodo(text) {
-  const clean = cleanText(text);
+async function addTodo(payload) {
+  const clean = cleanText(payload.text);
   if (!clean) {
     throw new Error("Please enter a task.");
   }
   if (clean.length > 200) {
     throw new Error("Keep tasks under 200 characters.");
   }
+  const durationMinutes = clampNumber(payload.durationMinutes, 1, 480, 25);
 
   const { todos } = await chrome.storage.local.get("todos");
-  const list = Array.isArray(todos) ? todos : [];
+  const list = normalizeTodos(todos);
   list.unshift({
     id: crypto.randomUUID(),
     text: clean,
     done: false,
+    durationMinutes,
+    remainingSeconds: durationMinutes * 60,
+    timerState: "idle",
+    timerStartedAt: null,
     createdAt: Date.now()
   });
   await chrome.storage.local.set({ todos: list });
 }
 
+async function updateTodo(payload) {
+  const id = String(payload.id || "");
+  const clean = cleanText(payload.text);
+  if (!id) return;
+  if (!clean) {
+    throw new Error("Please enter a task.");
+  }
+  if (clean.length > 200) {
+    throw new Error("Keep tasks under 200 characters.");
+  }
+  const nextDuration = clampNumber(payload.durationMinutes, 1, 480, 25);
+  const { todos } = await chrome.storage.local.get("todos");
+  const list = normalizeTodos(todos);
+  const target = list.find((item) => item.id === id);
+  if (!target) return;
+
+  const previousDurationSeconds = Number(target.durationMinutes || 25) * 60;
+  const liveRemaining = getTodoRemainingSeconds(target);
+  const wasPristine = liveRemaining === previousDurationSeconds || target.timerState === "idle";
+  target.text = clean;
+  target.durationMinutes = nextDuration;
+  target.remainingSeconds = wasPristine ? nextDuration * 60 : Math.min(liveRemaining, nextDuration * 60);
+  target.timerState = target.remainingSeconds <= 0 ? "complete" : "idle";
+  target.timerStartedAt = null;
+  target.updatedAt = Date.now();
+  await chrome.storage.local.set({ todos: list });
+}
+
 async function toggleTodo(id) {
   const { todos } = await chrome.storage.local.get("todos");
-  const list = Array.isArray(todos) ? todos : [];
+  const list = normalizeTodos(todos);
   const target = list.find((item) => item.id === id);
   if (!target) return;
   target.done = !target.done;
   target.completedAt = target.done ? Date.now() : null;
+  if (target.done && target.timerState === "running") {
+    target.remainingSeconds = getTodoRemainingSeconds(target);
+    target.timerState = "paused";
+    target.timerStartedAt = null;
+  }
+  await chrome.storage.local.set({ todos: list });
+}
+
+async function startTodoTimer(id) {
+  const { todos } = await chrome.storage.local.get("todos");
+  const list = normalizeTodos(todos);
+  const target = list.find((item) => item.id === id);
+  if (!target || target.done) return;
+  target.remainingSeconds = Math.max(1, getTodoRemainingSeconds(target));
+  target.timerState = "running";
+  target.timerStartedAt = Date.now();
+  await chrome.storage.local.set({ todos: list });
+}
+
+async function pauseTodoTimer(id) {
+  const { todos } = await chrome.storage.local.get("todos");
+  const list = normalizeTodos(todos);
+  const target = list.find((item) => item.id === id);
+  if (!target) return;
+  target.remainingSeconds = getTodoRemainingSeconds(target);
+  target.timerState = target.remainingSeconds <= 0 ? "complete" : "paused";
+  target.timerStartedAt = null;
+  await chrome.storage.local.set({ todos: list });
+}
+
+async function resetTodoTimer(id) {
+  const { todos } = await chrome.storage.local.get("todos");
+  const list = normalizeTodos(todos);
+  const target = list.find((item) => item.id === id);
+  if (!target) return;
+  target.remainingSeconds = Number(target.durationMinutes || 25) * 60;
+  target.timerState = "idle";
+  target.timerStartedAt = null;
   await chrome.storage.local.set({ todos: list });
 }
 
 async function removeTodo(id) {
   const { todos } = await chrome.storage.local.get("todos");
-  const list = Array.isArray(todos) ? todos : [];
+  const list = normalizeTodos(todos);
   await chrome.storage.local.set({ todos: list.filter((item) => item.id !== id) });
 }
 
 async function clearCompletedTodos() {
   const { todos } = await chrome.storage.local.get("todos");
-  const list = Array.isArray(todos) ? todos : [];
+  const list = normalizeTodos(todos);
   await chrome.storage.local.set({ todos: list.filter((item) => !item.done) });
 }
 
@@ -1520,6 +1603,44 @@ function normalizeEmail(email) {
 
 function cleanText(value) {
   return String(value || "").replace(/\s+/g, " ").trim();
+}
+
+function normalizeTodos(items) {
+  if (!Array.isArray(items)) {
+    return [];
+  }
+
+  return items.map((item) => {
+    const durationMinutes = clampNumber(item.durationMinutes, 1, 480, 25);
+    const remainingSeconds = Number.isFinite(Number(item.remainingSeconds))
+      ? Math.max(0, Math.min(durationMinutes * 60, Math.round(Number(item.remainingSeconds))))
+      : durationMinutes * 60;
+    const timerState = ["idle", "running", "paused", "complete"].includes(item.timerState)
+      ? item.timerState
+      : "idle";
+
+    return {
+      id: item.id || crypto.randomUUID(),
+      text: cleanText(item.text) || "Untitled task",
+      done: Boolean(item.done),
+      durationMinutes,
+      remainingSeconds,
+      timerState: item.done ? "paused" : timerState,
+      timerStartedAt: timerState === "running" ? Number(item.timerStartedAt || Date.now()) : null,
+      createdAt: Number(item.createdAt || Date.now()),
+      updatedAt: item.updatedAt || null,
+      completedAt: item.completedAt || null
+    };
+  });
+}
+
+function getTodoRemainingSeconds(todo) {
+  const base = Math.max(0, Number(todo.remainingSeconds || 0));
+  if (todo.timerState !== "running" || !todo.timerStartedAt) {
+    return base;
+  }
+  const elapsed = Math.floor((Date.now() - Number(todo.timerStartedAt)) / 1000);
+  return Math.max(0, base - elapsed);
 }
 
 function uniqueHosts(items) {

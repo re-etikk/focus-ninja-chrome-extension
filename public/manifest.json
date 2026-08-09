@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Study Phone Detector Pro",
+  "name": "Focus Ninja",
   "description": "Advanced focus assistant with Firebase login, study session tracking, audio alerts, and smart site controls.",
   "version": "2.1.0",
   "minimum_chrome_version": "114",
@@ -18,14 +18,14 @@
     "https://*/*"
   ],
   "oauth2": {
-    "client_id": "YOUR_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com",
+    "client_id": "790058346976-o71v6iqugponp6rpcmr79q1347g3tqsv.apps.googleusercontent.com",
     "scopes": ["openid", "email", "profile"]
   },
   "background": {
     "service_worker": "background.js"
   },
   "action": {
-    "default_title": "Study Phone Detector Pro",
+    "default_title": "Focus Ninja",
     "default_popup": "popup.html"
   },
   "icons": {

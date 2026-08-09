@@ -148,6 +148,7 @@
           </div>
           <form id="monitorTodoForm" class="inline-form">
             <input id="monitorTodoInput" type="text" maxlength="200" placeholder="Add a task…" />
+            <input id="monitorTodoMinutesInput" type="number" min="1" max="480" step="1" value="25" aria-label="Task timer minutes" />
             <button type="submit" class="secondary-btn">Add</button>
           </form>
           <div id="monitorTodoList" class="todo-list"></div>

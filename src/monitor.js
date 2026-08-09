@@ -63,10 +63,15 @@ function bindMonitorEvents() {
   document.getElementById("monitorTodoForm")?.addEventListener("submit", async (event) => {
     event.preventDefault();
     const input = document.getElementById("monitorTodoInput");
+    const minutesInput = document.getElementById("monitorTodoMinutesInput");
     const text = input?.value?.trim();
     if (!text) return;
-    await runMonitorAction("todo:add", { text });
+    await runMonitorAction("todo:add", {
+      text,
+      durationMinutes: Number(minutesInput?.value || 25)
+    });
     if (input) input.value = "";
+    if (minutesInput) minutesInput.value = "25";
   });
 
   document.getElementById("addCurrentTabBtn")?.addEventListener("click", async () => {
@@ -269,7 +274,7 @@ function renderPomodoro(session, settings) {
   skipBtn.style.display = isBreak && !session.paused ? "inline-flex" : "none";
 }
 
-function renderMonitorTodos(todos) {
+function renderMonitorTodosLegacy(todos) {
   const container = document.getElementById("monitorTodoList");
   if (!container) return;
   container.innerHTML = "";
@@ -301,6 +306,109 @@ function renderMonitorTodos(todos) {
     item.appendChild(removeBtn);
     container.appendChild(item);
   });
+}
+
+function renderMonitorTodos(todos) {
+  const container = document.getElementById("monitorTodoList");
+  if (!container) return;
+  container.innerHTML = "";
+
+  const normalized = todos.map(normalizeTodoForUi);
+  if (!normalized.length) {
+    container.innerHTML = `<div class="site-pill">No tasks yet - add one above.</div>`;
+    return;
+  }
+
+  normalized.slice(0, 12).forEach((todo) => {
+    const remainingSeconds = getTodoRemainingSeconds(todo);
+    const totalSeconds = Math.max(60, Number(todo.durationMinutes || 25) * 60);
+    const progress = Math.max(0, Math.min(100, ((totalSeconds - remainingSeconds) / totalSeconds) * 100));
+    const item = document.createElement("div");
+    item.className = `todo-item${todo.done ? " done" : ""}`;
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = Boolean(todo.done);
+    checkbox.addEventListener("change", () => runMonitorAction("todo:toggle", { id: todo.id }));
+
+    const main = document.createElement("div");
+    main.className = "todo-main";
+    const label = document.createElement("span");
+    label.className = "todo-text";
+    label.textContent = todo.text;
+    const meta = document.createElement("div");
+    meta.className = "todo-meta";
+    meta.innerHTML = `<span class="todo-countdown">${formatCountdown(remainingSeconds)}</span><span>${todo.durationMinutes} min</span><span>${timerStateLabel(todo, remainingSeconds)}</span>`;
+    const progressBar = document.createElement("div");
+    progressBar.className = "todo-progress";
+    progressBar.innerHTML = `<span style="width:${progress}%"></span>`;
+    main.appendChild(label);
+    main.appendChild(meta);
+    main.appendChild(progressBar);
+
+    const actions = document.createElement("div");
+    actions.className = "todo-actions";
+    const timerBtn = document.createElement("button");
+    timerBtn.type = "button";
+    timerBtn.textContent = todo.timerState === "running" && remainingSeconds > 0 ? "Pause" : "Start";
+    timerBtn.disabled = Boolean(todo.done) || remainingSeconds <= 0;
+    timerBtn.addEventListener("click", () => {
+      runMonitorAction(todo.timerState === "running" ? "todo:pauseTimer" : "todo:startTimer", { id: todo.id });
+    });
+
+    const resetBtn = document.createElement("button");
+    resetBtn.type = "button";
+    resetBtn.textContent = "Reset";
+    resetBtn.addEventListener("click", () => runMonitorAction("todo:resetTimer", { id: todo.id }));
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "todo-delete";
+    removeBtn.textContent = "×";
+    removeBtn.addEventListener("click", () => runMonitorAction("todo:remove", { id: todo.id }));
+
+    item.appendChild(checkbox);
+    item.appendChild(main);
+    actions.appendChild(timerBtn);
+    actions.appendChild(resetBtn);
+    actions.appendChild(removeBtn);
+    item.appendChild(actions);
+    container.appendChild(item);
+  });
+}
+
+function normalizeTodoForUi(todo) {
+  const durationMinutes = Number.isFinite(Number(todo.durationMinutes)) ? Number(todo.durationMinutes) : 25;
+  return {
+    ...todo,
+    durationMinutes,
+    remainingSeconds: Number.isFinite(Number(todo.remainingSeconds)) ? Number(todo.remainingSeconds) : durationMinutes * 60,
+    timerState: todo.timerState || "idle",
+    timerStartedAt: todo.timerStartedAt || null
+  };
+}
+
+function getTodoRemainingSeconds(todo) {
+  const base = Math.max(0, Math.round(Number(todo.remainingSeconds || 0)));
+  if (todo.timerState !== "running" || !todo.timerStartedAt) {
+    return base;
+  }
+  const elapsed = Math.floor((Date.now() - Number(todo.timerStartedAt)) / 1000);
+  return Math.max(0, base - elapsed);
+}
+
+function formatCountdown(totalSeconds) {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+function timerStateLabel(todo, remainingSeconds) {
+  if (todo.done) return "Done";
+  if (remainingSeconds <= 0) return "Time up";
+  if (todo.timerState === "running") return "Running";
+  if (todo.timerState === "paused") return "Paused";
+  return "Ready";
 }
 
 function renderMonitorWeekChart(series) {

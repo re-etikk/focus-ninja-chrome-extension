@@ -14,6 +14,7 @@ const loadingOverlay = document.getElementById("loadingOverlay");
 let appState = null;
 let popupReady = false;
 let isSubmitting = false;
+let countdownPaintTimer = null;
 
 initPopup();
 
@@ -304,11 +305,16 @@ document.querySelectorAll(".preset-btn").forEach((button) => {
   document.getElementById("todoForm")?.addEventListener("submit", async (event) => {
     event.preventDefault();
     const input = document.getElementById("todoInput");
+    const minutesInput = document.getElementById("todoMinutesInput");
     const text = input?.value?.trim();
     if (!text) return;
     await submitAction(async () => {
-      await sendMessage("todo:add", { text });
+      await sendMessage("todo:add", {
+        text,
+        durationMinutes: Number(minutesInput?.value || 25)
+      });
       if (input) input.value = "";
+      if (minutesInput) minutesInput.value = "25";
     }, todoMessage);
   });
 
@@ -385,6 +391,7 @@ function render() {
   const loggedIn = Boolean(appState?.user);
   authView?.classList.toggle("hidden", loggedIn);
   dashboardView?.classList.toggle("hidden", !loggedIn);
+  scheduleCountdownPaint(loggedIn);
 
   if (!loggedIn) {
     return;
@@ -589,7 +596,7 @@ function populateSettingToggles(settings) {
   });
 
   document.querySelectorAll(".preset-btn").forEach((button) => {
-    button.classList.toggle("active", button.dataset.preset === settings.focusPreset);
+    button.classList.toggle("active-preset", button.dataset.preset === settings.focusPreset);
   });
   setText("presetDescription", PRESET_DESCRIPTIONS[settings.focusPreset] || PRESET_DESCRIPTIONS.deep);
 }
@@ -629,7 +636,7 @@ function renderSiteList(sites) {
   });
 }
 
-function renderTodos(todos) {
+function renderTodosLegacy(todos) {
   const container = document.getElementById("todoList");
   const stats = document.getElementById("todoStats");
   if (!container) return;
@@ -676,6 +683,191 @@ function renderTodos(todos) {
     item.appendChild(removeBtn);
     container.appendChild(item);
   });
+}
+
+function renderTodos(todos) {
+  const container = document.getElementById("todoList");
+  const stats = document.getElementById("todoStats");
+  if (!container) return;
+
+  const normalized = todos.map(normalizeTodoForUi);
+  const done = normalized.filter((t) => t.done).length;
+  const running = normalized.filter((t) => t.timerState === "running" && getTodoRemainingSeconds(t) > 0).length;
+  if (stats) {
+    stats.textContent = normalized.length
+      ? `${done} of ${normalized.length} done${running ? ` • ${running} timer running` : ""}`
+      : "No tasks yet - add your first one above.";
+  }
+
+  container.innerHTML = "";
+  if (!normalized.length) {
+    container.innerHTML = '<p class="empty-text">Nothing on your list. Add a small, focused task to knock out this session.</p>';
+    return;
+  }
+
+  normalized.forEach((todo) => {
+    const remainingSeconds = getTodoRemainingSeconds(todo);
+    const totalSeconds = Math.max(60, Number(todo.durationMinutes || 25) * 60);
+    const progress = Math.max(0, Math.min(100, ((totalSeconds - remainingSeconds) / totalSeconds) * 100));
+    const item = document.createElement("div");
+    item.className = `todo-item${todo.done ? " done" : ""}`;
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.className = "todo-checkbox";
+    checkbox.checked = Boolean(todo.done);
+    checkbox.addEventListener("change", async () => {
+      await submitAction(async () => {
+        await sendMessage("todo:toggle", { id: todo.id });
+      }, todoMessage);
+    });
+
+    const main = document.createElement("div");
+    main.className = "todo-main";
+    const label = document.createElement("span");
+    label.className = "todo-text";
+    label.textContent = todo.text;
+    const meta = document.createElement("div");
+    meta.className = "todo-meta";
+    meta.innerHTML = `<span class="todo-countdown">${formatCountdown(remainingSeconds)}</span><span>${todo.durationMinutes} min</span><span>${timerStateLabel(todo, remainingSeconds)}</span>`;
+    const progressBar = document.createElement("div");
+    progressBar.className = "todo-progress";
+    progressBar.innerHTML = `<span style="width:${progress}%"></span>`;
+    main.appendChild(label);
+    main.appendChild(meta);
+    main.appendChild(progressBar);
+
+    const actions = document.createElement("div");
+    actions.className = "todo-actions";
+    const timerBtn = document.createElement("button");
+    timerBtn.type = "button";
+    timerBtn.className = "todo-action";
+    timerBtn.textContent = todo.timerState === "running" && remainingSeconds > 0 ? "Pause" : "Start";
+    timerBtn.disabled = Boolean(todo.done) || remainingSeconds <= 0;
+    timerBtn.addEventListener("click", async () => {
+      await submitAction(async () => {
+        await sendMessage(todo.timerState === "running" ? "todo:pauseTimer" : "todo:startTimer", { id: todo.id });
+      }, todoMessage);
+    });
+
+    const resetBtn = document.createElement("button");
+    resetBtn.type = "button";
+    resetBtn.className = "todo-action";
+    resetBtn.textContent = "Reset";
+    resetBtn.addEventListener("click", async () => {
+      await submitAction(async () => {
+        await sendMessage("todo:resetTimer", { id: todo.id });
+      }, todoMessage);
+    });
+
+    const editBtn = document.createElement("button");
+    editBtn.type = "button";
+    editBtn.className = "todo-action";
+    editBtn.textContent = "Edit";
+    editBtn.addEventListener("click", () => renderTodoEditForm(item, todo));
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "todo-action todo-delete";
+    removeBtn.textContent = "×";
+    removeBtn.setAttribute("aria-label", `Remove ${todo.text}`);
+    removeBtn.addEventListener("click", async () => {
+      await submitAction(async () => {
+        await sendMessage("todo:remove", { id: todo.id });
+      }, todoMessage);
+    });
+
+    item.appendChild(checkbox);
+    item.appendChild(main);
+    actions.appendChild(timerBtn);
+    actions.appendChild(resetBtn);
+    actions.appendChild(editBtn);
+    actions.appendChild(removeBtn);
+    item.appendChild(actions);
+    container.appendChild(item);
+  });
+}
+
+function renderTodoEditForm(item, todo) {
+  item.innerHTML = "";
+  const form = document.createElement("form");
+  form.className = "todo-edit-form";
+  form.innerHTML = `
+    <input name="text" maxlength="200" value="${escapeAttribute(todo.text)}" />
+    <input name="durationMinutes" type="number" min="1" max="480" step="1" value="${todo.durationMinutes}" />
+    <button type="submit" class="todo-action">Save</button>
+    <button type="button" class="todo-action" data-cancel>Cancel</button>
+  `;
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const formData = new FormData(form);
+    await submitAction(async () => {
+      await sendMessage("todo:update", {
+        id: todo.id,
+        text: formData.get("text"),
+        durationMinutes: Number(formData.get("durationMinutes") || todo.durationMinutes)
+      });
+    }, todoMessage);
+  });
+  form.querySelector("[data-cancel]")?.addEventListener("click", () => renderTodos(appState.todos || []));
+  item.appendChild(form);
+  form.querySelector("input")?.focus();
+}
+
+function scheduleCountdownPaint(enabled) {
+  if (!enabled) {
+    if (countdownPaintTimer) clearInterval(countdownPaintTimer);
+    countdownPaintTimer = null;
+    return;
+  }
+  if (countdownPaintTimer) return;
+  countdownPaintTimer = setInterval(() => {
+    if (appState?.todos) {
+      renderTodos(appState.todos);
+    }
+  }, 1000);
+}
+
+function normalizeTodoForUi(todo) {
+  const durationMinutes = Number.isFinite(Number(todo.durationMinutes)) ? Number(todo.durationMinutes) : 25;
+  return {
+    ...todo,
+    durationMinutes,
+    remainingSeconds: Number.isFinite(Number(todo.remainingSeconds)) ? Number(todo.remainingSeconds) : durationMinutes * 60,
+    timerState: todo.timerState || "idle",
+    timerStartedAt: todo.timerStartedAt || null
+  };
+}
+
+function getTodoRemainingSeconds(todo) {
+  const base = Math.max(0, Math.round(Number(todo.remainingSeconds || 0)));
+  if (todo.timerState !== "running" || !todo.timerStartedAt) {
+    return base;
+  }
+  const elapsed = Math.floor((Date.now() - Number(todo.timerStartedAt)) / 1000);
+  return Math.max(0, base - elapsed);
+}
+
+function formatCountdown(totalSeconds) {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+function timerStateLabel(todo, remainingSeconds) {
+  if (todo.done) return "Done";
+  if (remainingSeconds <= 0) return "Time up";
+  if (todo.timerState === "running") return "Running";
+  if (todo.timerState === "paused") return "Paused";
+  return "Ready";
+}
+
+function escapeAttribute(value) {
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
 }
 
 async function updateSetting(key, value, messageTarget = accountMessage) {

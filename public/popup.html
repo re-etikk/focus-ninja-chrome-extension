@@ -1,434 +1,1816 @@
 <!doctype html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Study Phone Detector Pro</title>
+    <title>Focus Ninja</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,600;14..32,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="popup.css" />
-  </head>
-  <body>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #080c14;
+            --bg-primary: #0f1520;
+            --bg-card: #151c2b;
+            --bg-card-hover: #1a2234;
+            --bg-input: #111827;
+            --border-subtle: rgba(255, 255, 255, 0.06);
+            --border-medium: rgba(255, 255, 255, 0.10);
+            --border-glow: rgba(245, 158, 11, 0.30);
+            --gold-400: #f59e0b;
+            --gold-500: #d97706;
+            --gold-600: #b45309;
+            --gold-glow: rgba(245, 158, 11, 0.25);
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --success: #10b981;
+            --info: #3b82f6;
+            --radius-sm: 10px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --radius-xl: 24px;
+            --transition-fast: 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-smooth: 0.30s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-bounce: 0.40s cubic-bezier(0.34, 1.56, 0.64, 1);
+            --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+            --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.5), 0 4px 24px rgba(0, 0, 0, 0.35);
+            --shadow-glow: 0 0 60px rgba(245, 158, 11, 0.12), 0 0 120px rgba(245, 158, 11, 0.05);
+            --shadow-auth: 0 8px 48px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.06), 0 0 80px rgba(245, 158, 11, 0.08);
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            font-size: 15px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            width: 500px;
+            min-height: 560px;
+            max-height: 700px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            line-height: 1.5;
+            letter-spacing: -0.01em;
+            scroll-behavior: smooth;
+        }
+
+        body::-webkit-scrollbar {
+            width: 5px;
+        }
+        body::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        body::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+        }
+        body::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .app-shell {
+            position: relative;
+            padding: 20px 22px 24px;
+        }
+
+        /* ── HERO ─────────────────────────── */
+        .hero {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 20px;
+            margin-bottom: 18px;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.07) 0%, rgba(245, 158, 11, 0.02) 50%, transparent 100%);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+        .hero-copy {
+            position: relative;
+            z-index: 2;
+        }
+        .eyebrow {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--gold-400);
+            margin-bottom: 2px;
+        }
+        .hero h1 {
+            font-size: 1.55rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: #fff;
+            line-height: 1.15;
+            margin-bottom: 4px;
+        }
+        .hero-subtitle {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            max-width: 260px;
+            line-height: 1.4;
+        }
+        .hero-orb {
+            position: absolute;
+            right: -30px;
+            top: -40px;
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.18) 0%, transparent 70%);
+            filter: blur(40px);
+            pointer-events: none;
+            z-index: 1;
+            animation: orbFloat 6s ease-in-out infinite;
+        }
+        @keyframes orbFloat {
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+            33% {
+                transform: translate(-8px, 6px) scale(1.08);
+            }
+            66% {
+                transform: translate(6px, -4px) scale(0.94);
+            }
+        }
+
+        /* ── AUTH SECTION ─────────────────── */
+        .auth-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 0 20px;
+        }
+        .auth-card.glass {
+            width: 100%;
+            max-width: 420px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-medium);
+            border-radius: var(--radius-xl);
+            padding: 32px 28px 28px;
+            box-shadow: var(--shadow-auth);
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition-smooth);
+        }
+        .auth-card.glass::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: var(--radius-xl);
+            padding: 1px;
+            background: linear-gradient(160deg, rgba(245, 158, 11, 0.25), transparent 50%, rgba(245, 158, 11, 0.06));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .auth-card.glass::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 20%, rgba(245, 158, 11, 0.04) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+            animation: authShimmer 8s linear infinite;
+        }
+        @keyframes authShimmer {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        .auth-brand {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            margin-bottom: 22px;
+        }
+        .brand-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(245, 158, 11, 0.06) 100%);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            margin-bottom: 14px;
+            box-shadow: 0 0 30px rgba(245, 158, 11, 0.15);
+            animation: iconPulse 3s ease-in-out infinite;
+            overflow: hidden;
+        }
+        @keyframes iconPulse {
+            0%,
+            100% {
+                box-shadow: 0 0 30px rgba(245, 158, 11, 0.15);
+            }
+            50% {
+                box-shadow: 0 0 50px rgba(245, 158, 11, 0.30), 0 0 80px rgba(245, 158, 11, 0.10);
+            }
+        }
+        .brand-logo {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+            display: block;
+        }
+        .auth-brand h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.02em;
+            margin-bottom: 4px;
+        }
+        .auth-brand p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Google Button */
+        .btn-google {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            background: #fff;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            color: #1f2937;
+            font-family: var(--font-sans);
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            letter-spacing: -0.01em;
+        }
+        .btn-google:hover {
+            background: #f9fafb;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+        }
+        .btn-google:active {
+            transform: scale(0.98);
+            transition: 0.08s;
+        }
+        .btn-google svg {
+            flex-shrink: 0;
+        }
+
+        .divider {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 18px 0;
+            color: var(--text-dim);
+            font-size: 0.72rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-medium);
+        }
+
+        /* Auth Tabs */
+        .auth-tabs {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            gap: 4px;
+            background: var(--bg-input);
+            border-radius: var(--radius-md);
+            padding: 4px;
+            margin-bottom: 20px;
+        }
+        .auth-tabs .tab-btn {
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-family: var(--font-sans);
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 11px;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            letter-spacing: -0.01em;
+            position: relative;
+            z-index: 1;
+        }
+        .auth-tabs .tab-btn.active {
+            background: var(--bg-card);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        .auth-tabs .tab-btn:hover:not(.active) {
+            color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        /* Forms */
+        .auth-form {
+            position: relative;
+            z-index: 1;
+            display: none;
+            flex-direction: column;
+            gap: 14px;
+            animation: fadeSlideIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .auth-form.active {
+            display: flex;
+        }
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .input-group {
+            position: relative;
+            z-index: 1;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 13px 14px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-medium);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: 0.88rem;
+            letter-spacing: -0.01em;
+            transition: var(--transition-fast);
+            outline: none;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        .input-group input:focus {
+            border-color: var(--gold-400);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1), inset 0 1px 2px rgba(0, 0, 0, 0.2);
+            background: #111d2e;
+        }
+        .input-group input:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .input-group label {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            pointer-events: none;
+            transition: var(--transition-fast);
+            letter-spacing: -0.01em;
+            background: transparent;
+            padding: 0 4px;
+        }
+        .input-group input:focus+label,
+        .input-group input:not(:placeholder-shown)+label {
+            top: -8px;
+            left: 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--gold-400);
+            background: var(--bg-card);
+            padding: 0 6px;
+            letter-spacing: 0.02em;
+        }
+        .input-group input:not(:placeholder-shown):not(:focus)+label {
+            color: var(--text-dim);
+            background: var(--bg-card);
+        }
+
+        .form-footer {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: -6px;
+            margin-bottom: 2px;
+            position: relative;
+            z-index: 1;
+        }
+        .form-footer a {
+            font-size: 0.75rem;
+            color: var(--gold-400);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition-fast);
+        }
+        .form-footer a:hover {
+            color: #fbbf24;
+            text-decoration: underline;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 13px 16px;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border: none;
+            border-radius: var(--radius-sm);
+            color: #0a0a0a;
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            letter-spacing: -0.01em;
+            box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+        }
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            opacity: 0;
+            transition: opacity 0.25s;
+        }
+        .btn-primary:hover {
+            box-shadow: 0 6px 24px rgba(245, 158, 11, 0.45);
+            transform: translateY(-2px);
+        }
+        .btn-primary:hover::after {
+            opacity: 1;
+        }
+        .btn-primary span {
+            position: relative;
+            z-index: 2;
+        }
+        .btn-primary:active {
+            transform: scale(0.97);
+            transition: 0.08s;
+        }
+
+        .message-box {
+            position: relative;
+            z-index: 1;
+            padding: 11px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 0.78rem;
+            font-weight: 500;
+            margin-top: 10px;
+            letter-spacing: -0.01em;
+            transition: var(--transition-fast);
+            display: none;
+        }
+        .message-box:not(.hidden) {
+            display: block;
+        }
+        .message-box.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        .message-box.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        .message-box.info {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        /* ── DASHBOARD ────────────────────── */
+        .hidden {
+            display: none !important;
+        }
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 20px 22px;
+            margin-bottom: 14px;
+            box-shadow: var(--shadow-card);
+            transition: var(--transition-smooth);
+        }
+        .dashboard-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .dashboard-top h2 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+        .dashboard-subtitle {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            transition: var(--transition-fast);
+        }
+        .status-pill.idle {
+            background: rgba(148, 163, 184, 0.1);
+            color: #94a3b8;
+        }
+        .status-pill.active {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            animation: statusPulse 2s ease-in-out infinite;
+        }
+        @keyframes statusPulse {
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+            }
+        }
+        .ghost-btn {
+            background: transparent;
+            border: 1px solid var(--border-medium);
+            color: var(--text-secondary);
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-family: var(--font-sans);
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            letter-spacing: -0.01em;
+        }
+        .ghost-btn:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        /* Dashboard Tabs */
+        .dashboard-tabs {
+            display: flex;
+            gap: 2px;
+            background: var(--bg-input);
+            border-radius: var(--radius-md);
+            padding: 4px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+        .dashboard-tabs .tab-btn {
+            padding: 9px 15px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-family: var(--font-sans);
+            font-size: 0.78rem;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            letter-spacing: -0.01em;
+            white-space: nowrap;
+        }
+        .dashboard-tabs .tab-btn.active {
+            background: var(--bg-card);
+            color: #fff;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+        }
+        .dashboard-tabs .tab-btn:hover:not(.active) {
+            color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .panel {
+            display: none;
+            animation: fadeSlideIn 0.3s ease;
+        }
+        .panel.active {
+            display: block;
+        }
+
+        .section-header {
+            margin-bottom: 16px;
+        }
+        .section-header.compact {
+            margin-bottom: 10px;
+        }
+        .section-header h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 2px;
+        }
+        .section-header p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        .section-block {
+            margin-top: 18px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .stat-tile {
+            background: var(--bg-input);
+            border-radius: var(--radius-sm);
+            padding: 14px 12px;
+            text-align: center;
+            border: 1px solid var(--border-subtle);
+            transition: var(--transition-fast);
+        }
+        .stat-tile:hover {
+            border-color: var(--border-medium);
+            background: var(--bg-card-hover);
+        }
+        .stat-tile span {
+            display: block;
+            font-size: 0.68rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+        .stat-tile strong {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.02em;
+        }
+
+        .hero-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+        .goal-card {
+            background: var(--bg-input);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            border: 1px solid var(--border-subtle);
+        }
+        .progress-track {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 20px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f59e0b, #fbbf24);
+            border-radius: 20px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 0%;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+        }
+        .muted-note {
+            font-size: 0.72rem;
+            color: var(--text-dim);
+        }
+        .chip-list {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            background: rgba(245, 158, 11, 0.12);
+            color: var(--gold-400);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        /* Week chart & heatmap */
+        .week-chart {
+            display: flex;
+            gap: 6px;
+            align-items: flex-end;
+            height: 90px;
+            padding: 4px 0;
+        }
+        .week-chart .bar {
+            flex: 1;
+            background: linear-gradient(180deg, #f59e0b 0%, rgba(245, 158, 11, 0.3) 100%);
+            border-radius: 6px 6px 2px 2px;
+            min-height: 4px;
+            transition: var(--transition-smooth);
+            cursor: pointer;
+            position: relative;
+        }
+        .week-chart .bar:hover {
+            background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%);
+            box-shadow: 0 0 16px rgba(245, 158, 11, 0.5);
+        }
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(15, 1fr);
+            gap: 3px;
+            margin-top: 6px;
+        }
+        .heatmap-cell {
+            aspect-ratio: 1;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.03);
+            cursor: pointer;
+            transition: var(--transition-fast);
+            position: relative;
+        }
+        .heatmap-cell:hover {
+            transform: scale(1.3);
+            z-index: 2;
+            box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+            border-radius: 4px;
+        }
+        .heatmap-cell.level-0 {
+            background: rgba(255, 255, 255, 0.03);
+        }
+        .heatmap-cell.level-1 {
+            background: rgba(245, 158, 11, 0.2);
+        }
+        .heatmap-cell.level-2 {
+            background: rgba(245, 158, 11, 0.4);
+        }
+        .heatmap-cell.level-3 {
+            background: rgba(245, 158, 11, 0.65);
+        }
+        .heatmap-cell.level-4 {
+            background: rgba(245, 158, 11, 0.9);
+            box-shadow: 0 0 6px rgba(245, 158, 11, 0.5);
+        }
+        .heat-legend {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 8px;
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            flex-wrap: wrap;
+        }
+        .heat-legend-swatch {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+        .heat-legend-swatch.level-0 {
+            background: rgba(255, 255, 255, 0.03);
+        }
+        .heat-legend-swatch.level-1 {
+            background: rgba(245, 158, 11, 0.2);
+        }
+        .heat-legend-swatch.level-2 {
+            background: rgba(245, 158, 11, 0.4);
+        }
+        .heat-legend-swatch.level-3 {
+            background: rgba(245, 158, 11, 0.65);
+        }
+        .heat-legend-swatch.level-4 {
+            background: rgba(245, 158, 11, 0.9);
+        }
+
+        /* Controls */
+        .control-row {
+            display: flex;
+            gap: 10px;
+        }
+        .control-row.split {
+            flex-wrap: wrap;
+        }
+        .primary-btn {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border: none;
+            border-radius: var(--radius-sm);
+            color: #0a0a0a;
+            font-family: var(--font-sans);
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            letter-spacing: -0.01em;
+            box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+            flex: 1;
+        }
+        .primary-btn:hover {
+            box-shadow: 0 6px 24px rgba(245, 158, 11, 0.45);
+            transform: translateY(-2px);
+        }
+        .primary-btn:active {
+            transform: scale(0.97);
+        }
+        .secondary-btn {
+            padding: 10px 16px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-medium);
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            font-family: var(--font-sans);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            letter-spacing: -0.01em;
+            flex: 1;
+        }
+        .secondary-btn:hover {
+            background: var(--bg-card-hover);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+        .danger-btn {
+            padding: 10px 16px;
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: var(--radius-sm);
+            color: #ef4444;
+            font-family: var(--font-sans);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            letter-spacing: -0.01em;
+        }
+        .danger-btn:hover {
+            background: rgba(239, 68, 68, 0.22);
+            border-color: rgba(239, 68, 68, 0.5);
+            box-shadow: 0 4px 16px rgba(239, 68, 68, 0.2);
+        }
+        .inline-form {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .inline-form input {
+            flex: 1;
+            padding: 10px 13px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-medium);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: 0.82rem;
+            outline: none;
+            transition: var(--transition-fast);
+            letter-spacing: -0.01em;
+        }
+        .inline-form input:focus {
+            border-color: var(--gold-400);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        }
+        .site-tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .site-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 10px;
+            border-radius: 16px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            transition: var(--transition-fast);
+        }
+        .site-tag button {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 0.9rem;
+            line-height: 1;
+            padding: 0;
+            transition: var(--transition-fast);
+        }
+        .site-tag button:hover {
+            color: #ef4444;
+        }
+
+        /* Settings */
+        .preset-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .preset-btn {
+            padding: 9px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--border-medium);
+            background: var(--bg-input);
+            color: var(--text-secondary);
+            font-family: var(--font-sans);
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            letter-spacing: -0.01em;
+        }
+        .preset-btn:hover {
+            border-color: var(--gold-400);
+            color: #fff;
+            background: rgba(245, 158, 11, 0.08);
+        }
+        .preset-btn.active-preset {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: var(--gold-400);
+            color: var(--gold-400);
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.2);
+        }
+        .preset-description {
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            margin-top: 8px;
+        }
+        .field-row {
+            margin-bottom: 12px;
+        }
+        .field-row label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+            letter-spacing: -0.01em;
+        }
+        .field-row input[type="number"],
+        .field-row input[type="time"] {
+            width: 100%;
+            padding: 10px 13px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-medium);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: 0.85rem;
+            outline: none;
+            transition: var(--transition-fast);
+            letter-spacing: -0.01em;
+        }
+        .field-row input:focus {
+            border-color: var(--gold-400);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        }
+        .field-row input[type="range"] {
+            width: 100%;
+            accent-color: #f59e0b;
+            cursor: pointer;
+        }
+        .field-row-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .field-value {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--gold-400);
+        }
+        .field-hint {
+            font-size: 0.68rem;
+            color: var(--text-dim);
+            margin-top: 4px;
+        }
+        .field-row.two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .toggle-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 6px;
+        }
+        .toggle-grid.single {
+            grid-template-columns: 1fr;
+        }
+        .toggle-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 13px;
+            background: var(--bg-input);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            border: 1px solid var(--border-subtle);
+            transition: var(--transition-fast);
+            user-select: none;
+        }
+        .toggle-card:hover {
+            border-color: var(--border-medium);
+            background: var(--bg-card-hover);
+        }
+        .toggle-card span {
+            font-size: 0.76rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            letter-spacing: -0.01em;
+        }
+        .toggle-card input[type="checkbox"] {
+            width: 40px;
+            height: 22px;
+            appearance: none;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            cursor: pointer;
+            position: relative;
+            transition: var(--transition-fast);
+            flex-shrink: 0;
+        }
+        .toggle-card input[type="checkbox"]::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 16px;
+            height: 16px;
+            background: #fff;
+            border-radius: 50%;
+            transition: var(--transition-fast);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        .toggle-card input[type="checkbox"]:checked {
+            background: #f59e0b;
+        }
+        .toggle-card input[type="checkbox"]:checked::after {
+            left: 21px;
+            background: #0a0a0a;
+        }
+        .day-picker {
+            display: flex;
+            gap: 5px;
+            margin-top: 8px;
+        }
+        .day-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 1px solid var(--border-medium);
+            background: var(--bg-input);
+            color: var(--text-muted);
+            font-family: var(--font-sans);
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+        .day-btn:hover {
+            border-color: var(--gold-400);
+            color: #fff;
+        }
+        .day-btn.active-day {
+            background: rgba(245, 158, 11, 0.2);
+            border-color: var(--gold-400);
+            color: var(--gold-400);
+            box-shadow: 0 0 8px rgba(245, 158, 11, 0.2);
+        }
+
+        /* To-Do */
+        .todo-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        .todo-form {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 88px auto;
+            align-items: center;
+        }
+        .todo-form input[type="number"] {
+            flex: unset;
+            min-width: 0;
+        }
+        .todo-item {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr) auto;
+            gap: 10px;
+            padding: 10px 12px;
+            background: var(--bg-input);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-subtle);
+            transition: var(--transition-fast);
+        }
+        .todo-item:hover {
+            border-color: var(--border-medium);
+        }
+        .todo-item.done .todo-text,
+        .todo-item.completed .todo-text {
+            text-decoration: line-through;
+            opacity: 0.5;
+        }
+        .todo-main {
+            min-width: 0;
+        }
+        .todo-checkbox {
+            width: 18px;
+            height: 18px;
+            accent-color: #f59e0b;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .todo-text {
+            flex: 1;
+            font-size: 0.82rem;
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
+            word-break: break-word;
+        }
+        .todo-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 6px;
+            color: var(--text-dim);
+            font-size: 0.68rem;
+        }
+        .todo-countdown {
+            color: var(--gold-400);
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+        .todo-progress {
+            height: 5px;
+            margin-top: 8px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .todo-progress span {
+            display: block;
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #f59e0b, #fbbf24);
+            border-radius: inherit;
+        }
+        .todo-actions {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            max-width: 126px;
+        }
+        .todo-action {
+            min-width: 28px;
+            height: 28px;
+            padding: 0 8px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255,255,255,0.05);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.72rem;
+            font-weight: 700;
+            transition: var(--transition-fast);
+        }
+        .todo-action:hover {
+            background: rgba(245,158,11,0.14);
+            color: var(--gold-400);
+        }
+        .todo-delete:hover {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+        .todo-edit-form {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 80px auto auto;
+            gap: 6px;
+            align-items: center;
+        }
+        .todo-edit-form input {
+            padding: 9px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-subtle);
+            background: #0d1525;
+            color: var(--text-primary);
+            min-width: 0;
+        }
+        .todo-stats {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+        }
+
+        /* History */
+        .activity-log {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .activity-log::-webkit-scrollbar {
+            width: 4px;
+        }
+        .activity-log::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+        }
+        .activity-entry {
+            padding: 10px 12px;
+            background: var(--bg-input);
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-subtle);
+            letter-spacing: -0.01em;
+            transition: var(--transition-fast);
+        }
+        .activity-entry:hover {
+            border-color: var(--border-medium);
+        }
+        .activity-entry .time-stamp {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            margin-right: 8px;
+        }
+        .row-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* Account */
+        .profile-grid {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .profile-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 13px;
+            background: var(--bg-input);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-subtle);
+        }
+        .profile-item span {
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+        .profile-item strong {
+            font-size: 0.82rem;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        .oauth-info-box {
+            margin-top: 10px;
+            padding: 14px;
+            background: var(--bg-input);
+            border-radius: var(--radius-sm);
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            word-break: break-all;
+            border: 1px solid var(--border-subtle);
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        /* Loading */
+        .spinner {
+            width: 36px;
+            height: 36px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #f59e0b;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        #loadingOverlay {
+            transition: opacity 0.25s;
+        }
+
+        /* ── RESPONSIVE TWEAKS ───────────── */
+        @media (max-width: 520px) {
+            body {
+                width: 100%;
+            }
+            .hero-metrics {
+                grid-template-columns: 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .dashboard-tabs {
+                gap: 0;
+            }
+            .dashboard-tabs .tab-btn {
+                padding: 7px 10px;
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
     <main class="app-shell">
-      
-      <!-- HERO (Golden theme) -->
-      <section class="hero">
-        <div class="hero-copy">
-          <p class="eyebrow">Focus Console</p>
-          <h1>Study Phone Detector Pro</h1>
-          <p class="hero-subtitle">Advanced focus tracking, distraction shield, goal tracking, monitor mode, and popup alerts.</p>
+
+        <!-- HERO (Golden theme) -->
+        <section class="hero">
+            <div class="hero-copy">
+                <p class="eyebrow">Focus Console</p>
+                <h1>Focus Ninja</h1>
+                <p class="hero-subtitle">Advanced focus tracking, distraction shield, goal tracking, monitor mode, and popup alerts.</p>
+            </div>
+            <div class="hero-orb"></div>
+        </section>
+
+        <!-- AUTH SECTION (Centered & Golden Glass) -->
+        <section id="authView" class="auth-container">
+            <div class="auth-card glass">
+                <div class="auth-brand">
+                    <div class="brand-icon">
+                        <img src="icon.png" alt="Focus Ninja" class="brand-logo" onerror="this.style.display='none';this.parentElement.textContent='FN';this.parentElement.style.fontSize='18px';" />
+                    </div>
+                    <h2>Welcome back</h2>
+                    <p>Sign in to start your focused study session.</p>
+                </div>
+
+                <button id="googleQuickAccess" class="btn-google">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/><path fill="#FF3D00" d="m6.306 14.691 6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/></svg>
+                    <span>Continue with Google</span>
+                </button>
+                <div class="divider"><span>or</span></div>
+
+                <div class="auth-tabs">
+                    <button class="tab-btn active" data-auth-mode="login">Log In</button>
+                    <button class="tab-btn" data-auth-mode="register">Sign Up</button>
+                </div>
+
+                <!-- LOGIN FORM -->
+                <form id="loginForm" class="auth-form active">
+                    <div class="input-group">
+                        <input type="email" id="loginEmail" name="email" required placeholder=" " />
+                        <label for="loginEmail">Email Address</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="loginPassword" name="password" required placeholder=" " />
+                        <label for="loginPassword">Password</label>
+                    </div>
+                    <div class="form-footer">
+                        <a href="#" id="forgotPasswordLink">Forgot password?</a>
+                    </div>
+                    <button type="submit" class="btn-primary"><span>Log In</span></button>
+                </form>
+
+                <!-- REGISTER FORM -->
+                <form id="registerForm" class="auth-form">
+                    <div class="input-group">
+                        <input type="text" id="regName" name="name" required placeholder=" " />
+                        <label for="regName">Full Name</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="email" id="regEmail" name="email" required placeholder=" " />
+                        <label for="regEmail">Email Address</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="regPassword" name="password" required placeholder=" " />
+                        <label for="regPassword">Password</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="regConfirmPassword" name="confirmPassword" required placeholder=" " />
+                        <label for="regConfirmPassword">Confirm Password</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="date" id="regDob" name="dob" required placeholder=" " />
+                        <label for="regDob">Date of Birth</label>
+                    </div>
+                    <button type="submit" class="btn-primary"><span>Create Account</span></button>
+                </form>
+
+                <!-- GOOGLE PROFILE COMPLETION -->
+                <form id="googleProfileForm" class="auth-form">
+                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 16px; text-align:center;">Complete your profile to start.</p>
+                    <div class="input-group">
+                        <input id="googleEmail" type="email" disabled />
+                        <label>Google Email</label>
+                    </div>
+                    <div class="input-group">
+                        <input id="googleName" name="name" type="text" required placeholder=" " />
+                        <label for="googleName">Full Name</label>
+                    </div>
+                    <div class="input-group">
+                        <input id="googleDob" name="dob" type="date" required placeholder=" " />
+                        <label for="googleDob">Date of Birth</label>
+                    </div>
+                    <button type="submit" class="btn-primary"><span>Complete Registration</span></button>
+                </form>
+
+                <div id="authMessage" class="message-box hidden"></div>
+            </div>
+        </section>
+
+        <!-- DASHBOARD -->
+        <section id="dashboardView" class="hidden">
+            <div class="card dashboard-top">
+                <div>
+                    <p class="eyebrow">Logged In</p>
+                    <h2 id="welcomeText">Welcome back</h2>
+                    <p id="sessionHeadline" class="dashboard-subtitle">Your session controls are ready.</p>
+                </div>
+                <div class="top-actions">
+                    <span id="liveSessionPill" class="status-pill idle">Idle</span>
+                    <button id="logoutBtn" class="ghost-btn">Logout</button>
+                </div>
+            </div>
+
+            <div class="dashboard-tabs">
+                <button class="tab-btn active" data-panel="overviewPanel">Overview</button>
+                <button class="tab-btn" data-panel="controlsPanel">Controls</button>
+                <button class="tab-btn" data-panel="settingsPanel">Settings</button>
+                <button class="tab-btn" data-panel="todoPanel">To-Do</button>
+                <button class="tab-btn" data-panel="historyPanel">History</button>
+                <button class="tab-btn" data-panel="accountPanel">Account</button>
+            </div>
+
+            <section id="overviewPanel" class="card panel active">
+                <div class="section-header">
+                    <p class="eyebrow">Today</p>
+                    <h3>Focus snapshot</h3>
+                    <p>Your momentum, goal progress, and weekly rhythm in one place.</p>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-tile"><span>Focused</span><strong id="focusedMinutesStat">0m</strong></div>
+                    <div class="stat-tile"><span>Distractions</span><strong id="distractionMinutesStat">0m</strong></div>
+                    <div class="stat-tile"><span>Violations</span><strong id="violationsStat">0</strong></div>
+                    <div class="stat-tile"><span>Phone check-ins</span><strong id="phoneDetectionsStat">0</strong></div>
+                    <div class="stat-tile"><span>Streak</span><strong id="streakStat">0d</strong></div>
+                </div>
+                <div class="hero-metrics">
+                    <div class="goal-card">
+                        <div class="section-header compact">
+                            <h3>Goal progress</h3>
+                            <p id="insightTitle">Daily momentum is building.</p>
+                        </div>
+                        <div class="progress-track"><div id="goalProgressFill" class="progress-fill"></div></div>
+                        <p id="goalProgressStat" class="muted-note" style="margin-top:10px;">0%</p>
+                        <p id="insightDetail" class="muted-note" style="margin-top:8px;">Start a session and let the shield help you stay focused.</p>
+                    </div>
+                    <div class="goal-card">
+                        <div class="section-header compact">
+                            <h3>Preset</h3>
+                            <p>Current focus mode</p>
+                        </div>
+                        <div class="chip-list">
+                            <div class="chip"><strong id="presetStat">Deep Focus</strong></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="section-block">
+                    <div class="section-header compact">
+                        <h3>Weekly pulse</h3>
+                        <p>Your recent study rhythm.</p>
+                    </div>
+                    <div id="weekChart" class="week-chart"></div>
+                </div>
+                <div class="section-block">
+                    <div class="section-header compact">
+                        <h3>30-day consistency</h3>
+                        <p>Each square is one day. Darker = closer to (or past) your daily goal. Hover a square for exact numbers.</p>
+                    </div>
+                    <div id="heatmapGrid" class="heatmap-grid"></div>
+                    <div class="heat-legend">
+                        <span>No study</span>
+                        <span class="heat-legend-swatch level-0"></span>
+                        <span class="heat-legend-swatch level-1"></span>
+                        <span class="heat-legend-swatch level-2"></span>
+                        <span class="heat-legend-swatch level-3"></span>
+                        <span class="heat-legend-swatch level-4"></span>
+                        <span>Goal reached</span>
+                    </div>
+                </div>
+            </section>
+
+            <section id="controlsPanel" class="card panel">
+                <div class="section-header">
+                    <p class="eyebrow">Controls</p>
+                    <h3>Manage your session</h3>
+                    <p>Begin a focus block, pause it, or stop it whenever you need a reset.</p>
+                </div>
+                <div class="control-row split">
+                    <button id="startSessionBtn" class="primary-btn">Start session</button>
+                    <button id="stopSessionBtn" class="danger-btn hidden">Stop session</button>
+                </div>
+                <div class="control-row split" style="margin-top:10px;">
+                    <button id="pauseSessionBtn" class="secondary-btn hidden">Pause</button>
+                    <button id="resumeSessionBtn" class="secondary-btn hidden">Resume</button>
+                </div>
+                <div class="section-block">
+                    <button id="openMonitorBtn" class="ghost-btn">Open monitor view</button>
+                </div>
+                <div class="section-block">
+                    <div class="section-header compact">
+                        <h3>Allowed sites</h3>
+                        <p>Pages you can visit without triggering the shield.</p>
+                    </div>
+                    <form id="siteForm" class="inline-form">
+                        <input id="siteInput" type="text" placeholder="e.g. khanacademy.org" />
+                        <button type="submit" class="secondary-btn">Add</button>
+                    </form>
+                    <div id="siteList" class="site-tag-list"></div>
+                </div>
+            </section>
+
+            <section id="settingsPanel" class="card panel">
+                <div class="section-header">
+                    <p class="eyebrow">Settings</p>
+                    <h3>Tune your study shield</h3>
+                    <p>Every control here maps directly to how sessions behave.</p>
+                </div>
+
+                <div class="section-block">
+                    <div class="section-header compact">
+                        <h3>Focus preset</h3>
+                        <p>Quickly switch between focus rhythms.</p>
+                    </div>
+                    <div class="preset-row">
+                        <button class="preset-btn active-preset" data-preset="deep">Deep Focus</button>
+                        <button class="preset-btn" data-preset="sprint">Sprint</button>
+                        <button class="preset-btn" data-preset="review">Review</button>
+                    </div>
+                    <p id="presetDescription" class="preset-description">Deep Focus: long, strict blocks for your hardest work.</p>
+                </div>
+
+                <div class="section-block">
+                    <div class="section-header compact">
+                        <h3>Goals &amp; reminders</h3>
+                    </div>
+                    <div class="field-row">
+                        <label for="dailyGoalInput">Daily goal (minutes)</label>
+                        <input id="dailyGoalInput" type="number" min="30" max="600" step="5" />
+                    </div>
+                    <div class="field-row">
+                        <label for="breakReminderInput">Break reminder every (minutes)</label>
+                        <input id="breakReminderInput" type="number" min="15" max="180" step="5" />
+                    </div>
+                    <div class="toggle-grid">
+                        <label class="toggle-card"><span>Strict mode</span><input id="strictModeToggle" type="checkbox" /></label>
+                        <label class="toggle-card"><span>Adaptive shield</span><input id="adaptiveShieldToggle" type="checkbox" /></label>
+                        <label class="toggle-card"><span>Goal reminders</span><input id="goalReminderToggle" type="checkbox" /></label>
+                        <label class="toggle-card"><span>Auto break prompt</span><input id="autoBreakPromptToggle" type="checkbox" /></label>
+                        <label class="toggle-card"><span>Auto-open camera watcher</span><input id="autoOpenMonitorToggle" type="checkbox" /></label>
+                    </div>
+                </div>
+
+                <div class="section-block">
+                    <div class="section-header compact">
+                        <h3>Phone detection</h3>
+                        <p>Control how tolerant the camera watcher is.</p>
+                    </div>
+                    <div class="field-row">
+                        <label for="maxPhoneInput">Allowed phone check-ins per day (no alarm below this)</label>
+                        <input id="maxPhoneInput" type="number" min="0" max="50" step="1" />
+                    </div>
+                    <div class="field-row">
+                        <div class="field-row-header">
+                            <label for="phoneSensitivityInput">Detection sensitivity</label>
+                            <span id="phoneSensitivityValue" class="field-value">60%</span>
+                        </div>
+                        <input id="phoneSensitivityInput" type="range" min="30" max="90" step="5" />
+                        <p class="field-hint">Higher = fewer false alarms but may miss quick glances. Lower = catches more, but may misfire.</p>
+                    </div>
+                </div>
+
+                <div class="section-block">
+                    <div class="section-header compact">
+                        <h3>Pomodoro</h3>
+                    </div>
+                    <div class="toggle-grid single">
+                        <label class="toggle-card"><span>Enable Pomodoro cycle</span><input id="pomodoroEnabledToggle" type="checkbox" /></label>
+                    </div>
+                    <div class="field-row two-col">
+                        <div>
+                            <label for="pomodoroFocusInput">Focus block (min)</label>
+                            <input id="pomodoroFocusInput" type="number" min="15" max="90" step="5" />
+                        </div>
+                        <div>
+                            <label for="pomodoroBreakInput">Break block (min)</label>
+                            <input id="pomodoroBreakInput" type="number" min="3" max="30" step="1" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-block">
+                    <div class="section-header compact">
+                        <h3>Scheduled sessions</h3>
+                        <p>Automatically start a session during your study window.</p>
+                    </div>
+                    <div class="toggle-grid single">
+                        <label class="toggle-card"><span>Enable schedule</span><input id="scheduleEnabledToggle" type="checkbox" /></label>
+                    </div>
+                    <div class="field-row two-col">
+                        <div>
+                            <label for="scheduleStartInput">Start time</label>
+                            <input id="scheduleStartInput" type="time" />
+                        </div>
+                        <div>
+                            <label for="scheduleEndInput">End time</label>
+                            <input id="scheduleEndInput" type="time" />
+                        </div>
+                    </div>
+                    <div class="day-picker" id="scheduleDaysPicker">
+                        <button type="button" class="day-btn" data-day="0">S</button>
+                        <button type="button" class="day-btn" data-day="1">M</button>
+                        <button type="button" class="day-btn" data-day="2">T</button>
+                        <button type="button" class="day-btn" data-day="3">W</button>
+                        <button type="button" class="day-btn" data-day="4">T</button>
+                        <button type="button" class="day-btn" data-day="5">F</button>
+                        <button type="button" class="day-btn" data-day="6">S</button>
+                    </div>
+                </div>
+
+                <div class="section-block">
+                    <div class="section-header compact">
+                        <h3>Google Sign-In setup</h3>
+                        <p>If "Continue with Google" fails, get your exact setup values here.</p>
+                    </div>
+                    <button id="oauthInfoBtn" type="button" class="ghost-btn">Show my redirect URI &amp; Client ID</button>
+                    <div id="oauthInfoBox" class="oauth-info-box hidden"></div>
+                </div>
+
+                <div id="settingsMessage" class="message-box hidden"></div>
+            </section>
+
+            <section id="todoPanel" class="card panel">
+                <div class="section-header">
+                    <p class="eyebrow">To-Do</p>
+                    <h3>Study tasks</h3>
+                    <p>Small, focused tasks for this session — kept right next to your shield.</p>
+                </div>
+
+                <form id="todoForm" class="inline-form todo-form">
+                    <input id="todoInput" type="text" maxlength="200" placeholder="e.g. Finish chapter 4 notes" />
+                    <input id="todoMinutesInput" type="number" min="1" max="480" step="1" value="25" aria-label="Task timer minutes" />
+                    <button type="submit" class="secondary-btn">Add</button>
+                </form>
+
+                <div id="todoStats" class="todo-stats"></div>
+                <div id="todoList" class="todo-list"></div>
+
+                <div class="section-block">
+                    <button id="clearCompletedBtn" class="ghost-btn">Clear completed</button>
+                </div>
+
+                <div id="todoMessage" class="message-box hidden"></div>
+            </section>
+
+            <section id="historyPanel" class="card panel">
+                <div class="section-header">
+                    <p class="eyebrow">History</p>
+                    <h3>Recent activity</h3>
+                    <p>See how your focus sessions and alerts evolved over time.</p>
+                </div>
+                <div id="activityLog" class="activity-log"></div>
+
+                <div class="section-block">
+                    <div class="section-header compact">
+                        <h3>Export your data</h3>
+                        <p>Download a snapshot of your stats, settings, and tasks.</p>
+                    </div>
+                    <div class="row-actions">
+                        <button id="exportJsonBtn" class="secondary-btn">Export JSON</button>
+                        <button id="exportPdfBtn" class="secondary-btn">Export PDF report</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="accountPanel" class="card panel">
+                <div class="section-header">
+                    <p class="eyebrow">Account</p>
+                    <h3>Your profile</h3>
+                    <p>Review your account details and tweak the experience.</p>
+                </div>
+                <div class="profile-grid">
+                    <div class="profile-item"><span>Name</span><strong id="accountName">—</strong></div>
+                    <div class="profile-item"><span>Email</span><strong id="accountEmail">—</strong></div>
+                    <div class="profile-item"><span>Sign-in method</span><strong id="accountBadge">—</strong></div>
+                </div>
+                <form id="profileForm" class="auth-form active" style="display:flex;">
+                    <div class="input-group">
+                        <input id="profileName" name="name" type="text" placeholder=" " />
+                        <label for="profileName">Display Name</label>
+                    </div>
+                    <div class="input-group">
+                        <input id="profileDob" name="dob" type="date" placeholder=" " />
+                        <label for="profileDob">Date of Birth</label>
+                    </div>
+                    <div class="input-group">
+                        <input id="profilePhotoUrl" name="photoUrl" type="url" placeholder=" " />
+                        <label for="profilePhotoUrl">Photo URL</label>
+                    </div>
+                    <button type="submit" class="btn-primary"><span>Save profile</span></button>
+                </form>
+                <div class="section-block">
+                    <div class="section-header compact">
+                        <h3>Quick toggles</h3>
+                        <p>Fast access — full controls live in the Settings tab.</p>
+                    </div>
+                    <div class="toggle-grid">
+                        <label class="toggle-card"><span>Popup overlay</span><input id="popupEnabledToggle" type="checkbox" /></label>
+                        <label class="toggle-card"><span>Audio alerts</span><input id="audioEnabledToggle" type="checkbox" /></label>
+                        <label class="toggle-card"><span>Desktop notifications</span><input id="desktopNotificationsToggle" type="checkbox" /></label>
+                        <label class="toggle-card"><span>Smart auto-start</span><input id="smartAutoStartToggle" type="checkbox" /></label>
+                    </div>
+                </div>
+                <div class="section-block">
+                    <button id="deleteAccountBtn" class="danger-btn">Delete account</button>
+                </div>
+                <div id="accountMessage" class="message-box hidden"></div>
+            </section>
+        </section>
+
+        <!-- LOADING OVERLAY -->
+        <div id="loadingOverlay" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.45); backdrop-filter:blur(3px); display:flex; align-items:center; justify-content:center; z-index:999;">
+            <div class="spinner"></div>
         </div>
-        <div class="hero-orb"></div>
-      </section>
-
-      <!-- AUTH SECTION (Centered & Golden Glass) -->
-      <section id="authView" class="auth-container">
-        <div class="auth-card glass">
-          <div class="auth-brand">
-            <div class="brand-icon">🎯</div>
-            <h2>Welcome back</h2>
-            <p>Sign in to start your focused study session.</p>
-          </div>
-
-          <button id="googleQuickAccess" class="btn-google">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/><path fill="#FF3D00" d="m6.306 14.691 6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/></svg>
-            <span>Continue with Google</span>
-          </button>
-          <div class="divider"><span>or</span></div>
-
-          <div class="auth-tabs">
-            <button class="tab-btn active" data-auth-mode="login">Log In</button>
-            <button class="tab-btn" data-auth-mode="register">Sign Up</button>
-          </div>
-
-          <!-- LOGIN FORM -->
-          <form id="loginForm" class="auth-form active">
-            <div class="input-group">
-              <input type="email" id="loginEmail" name="email" required placeholder=" " />
-              <label for="loginEmail">Email Address</label>
-            </div>
-            <div class="input-group">
-              <input type="password" id="loginPassword" name="password" required placeholder=" " />
-              <label for="loginPassword">Password</label>
-            </div>
-            <div class="form-footer">
-              <a href="#" id="forgotPasswordLink">Forgot password?</a>
-            </div>
-            <button type="submit" class="btn-primary">Log In</button>
-          </form>
-
-          <!-- REGISTER FORM -->
-          <form id="registerForm" class="auth-form">
-            <div class="input-group">
-              <input type="text" id="regName" name="name" required placeholder=" " />
-              <label for="regName">Full Name</label>
-            </div>
-            <div class="input-group">
-              <input type="email" id="regEmail" name="email" required placeholder=" " />
-              <label for="regEmail">Email Address</label>
-            </div>
-            <div class="input-group">
-              <input type="password" id="regPassword" name="password" required placeholder=" " />
-              <label for="regPassword">Password</label>
-            </div>
-            <div class="input-group">
-              <input type="password" id="regConfirmPassword" name="confirmPassword" required placeholder=" " />
-              <label for="regConfirmPassword">Confirm Password</label>
-            </div>
-            <div class="input-group">
-              <input type="date" id="regDob" name="dob" required placeholder=" " />
-              <label for="regDob">Date of Birth</label>
-            </div>
-            <button type="submit" class="btn-primary">Create Account</button>
-          </form>
-
-          <!-- GOOGLE PROFILE COMPLETION -->
-          <form id="googleProfileForm" class="auth-form">
-            <p style="color: var(--muted); font-size: 14px; margin-bottom: 16px;">Complete your profile to start.</p>
-            <div class="input-group">
-              <input id="googleEmail" type="email" disabled />
-              <label>Google Email</label>
-            </div>
-            <div class="input-group">
-              <input id="googleName" name="name" type="text" required placeholder=" " />
-              <label for="googleName">Full Name</label>
-            </div>
-            <div class="input-group">
-              <input id="googleDob" name="dob" type="date" required placeholder=" " />
-              <label for="googleDob">Date of Birth</label>
-            </div>
-            <button type="submit" class="btn-primary">Complete Registration</button>
-          </form>
-
-          <div id="authMessage" class="message-box hidden"></div>
-        </div>
-      </section>
-
-      <!-- DASHBOARD -->
-      <section id="dashboardView" class="hidden">
-        <div class="card dashboard-top">
-          <div>
-            <p class="eyebrow">Logged In</p>
-            <h2 id="welcomeText">Welcome back</h2>
-            <p id="sessionHeadline" class="dashboard-subtitle">Your session controls are ready.</p>
-          </div>
-          <div class="top-actions">
-            <span id="liveSessionPill" class="status-pill idle">Idle</span>
-            <button id="logoutBtn" class="ghost-btn">Logout</button>
-          </div>
-        </div>
-
-        <div class="dashboard-tabs">
-          <button class="tab-btn active" data-panel="overviewPanel">Overview</button>
-          <button class="tab-btn" data-panel="controlsPanel">Controls</button>
-          <button class="tab-btn" data-panel="settingsPanel">Settings</button>
-          <button class="tab-btn" data-panel="todoPanel">To-Do</button>
-          <button class="tab-btn" data-panel="historyPanel">History</button>
-          <button class="tab-btn" data-panel="accountPanel">Account</button>
-        </div>
-
-        <section id="overviewPanel" class="card panel active">
-          <div class="section-header">
-            <p class="eyebrow">Today</p>
-            <h3>Focus snapshot</h3>
-            <p>Your momentum, goal progress, and weekly rhythm in one place.</p>
-          </div>
-          <div class="stats-grid">
-            <div class="stat-tile"><span>Focused</span><strong id="focusedMinutesStat">0m</strong></div>
-            <div class="stat-tile"><span>Distractions</span><strong id="distractionMinutesStat">0m</strong></div>
-            <div class="stat-tile"><span>Violations</span><strong id="violationsStat">0</strong></div>
-            <div class="stat-tile"><span>Phone check-ins</span><strong id="phoneDetectionsStat">0</strong></div>
-            <div class="stat-tile"><span>Streak</span><strong id="streakStat">0d</strong></div>
-          </div>
-          <div class="hero-metrics">
-            <div class="goal-card">
-              <div class="section-header compact">
-                <h3>Goal progress</h3>
-                <p id="insightTitle">Daily momentum is building.</p>
-              </div>
-              <div class="progress-track"><div id="goalProgressFill" class="progress-fill"></div></div>
-              <p id="goalProgressStat" class="muted-note" style="margin-top:10px;">0%</p>
-              <p id="insightDetail" class="muted-note" style="margin-top:8px;">Start a session and let the shield help you stay focused.</p>
-            </div>
-            <div class="goal-card">
-              <div class="section-header compact">
-                <h3>Preset</h3>
-                <p>Current focus mode</p>
-              </div>
-              <div class="chip-list">
-                <div class="chip"><strong id="presetStat">Deep Focus</strong></div>
-              </div>
-            </div>
-          </div>
-          <div class="section-block">
-            <div class="section-header compact">
-              <h3>Weekly pulse</h3>
-              <p>Your recent study rhythm.</p>
-            </div>
-            <div id="weekChart" class="week-chart"></div>
-          </div>
-          <div class="section-block">
-            <div class="section-header compact">
-              <h3>30-day consistency</h3>
-              <p>Each square is one day. Darker = closer to (or past) your daily goal. Hover a square for exact numbers.</p>
-            </div>
-            <div id="heatmapGrid" class="heatmap-grid"></div>
-            <div class="heat-legend">
-              <span>No study</span>
-              <span class="heat-legend-swatch level-0"></span>
-              <span class="heat-legend-swatch level-1"></span>
-              <span class="heat-legend-swatch level-2"></span>
-              <span class="heat-legend-swatch level-3"></span>
-              <span class="heat-legend-swatch level-4"></span>
-              <span>Goal reached</span>
-            </div>
-          </div>
-        </section>
-
-        <section id="controlsPanel" class="card panel">
-          <div class="section-header">
-            <p class="eyebrow">Controls</p>
-            <h3>Manage your session</h3>
-            <p>Begin a focus block, pause it, or stop it whenever you need a reset.</p>
-          </div>
-          <div class="control-row split">
-            <button id="startSessionBtn" class="primary-btn">Start session</button>
-            <button id="stopSessionBtn" class="danger-btn hidden">Stop session</button>
-          </div>
-          <div class="control-row split" style="margin-top:10px;">
-            <button id="pauseSessionBtn" class="secondary-btn hidden">Pause</button>
-            <button id="resumeSessionBtn" class="secondary-btn hidden">Resume</button>
-          </div>
-          <div class="section-block">
-            <button id="openMonitorBtn" class="ghost-btn">Open monitor view</button>
-          </div>
-          <div class="section-block">
-            <div class="section-header compact">
-              <h3>Allowed sites</h3>
-              <p>Pages you can visit without triggering the shield.</p>
-            </div>
-            <form id="siteForm" class="inline-form">
-              <input id="siteInput" type="text" placeholder="e.g. khanacademy.org" />
-              <button type="submit" class="secondary-btn">Add</button>
-            </form>
-            <div id="siteList" class="site-tag-list"></div>
-          </div>
-        </section>
-
-        <section id="settingsPanel" class="card panel">
-          <div class="section-header">
-            <p class="eyebrow">Settings</p>
-            <h3>Tune your study shield</h3>
-            <p>Every control here maps directly to how sessions behave.</p>
-          </div>
-
-          <div class="section-block">
-            <div class="section-header compact">
-              <h3>Focus preset</h3>
-              <p>Quickly switch between focus rhythms.</p>
-            </div>
-            <div class="preset-row">
-              <button class="preset-btn" data-preset="deep">Deep Focus</button>
-              <button class="preset-btn" data-preset="sprint">Sprint</button>
-              <button class="preset-btn" data-preset="review">Review</button>
-            </div>
-            <p id="presetDescription" class="preset-description">Deep Focus: long, strict blocks for your hardest work.</p>
-          </div>
-
-          <div class="section-block">
-            <div class="section-header compact">
-              <h3>Goals &amp; reminders</h3>
-            </div>
-            <div class="field-row">
-              <label for="dailyGoalInput">Daily goal (minutes)</label>
-              <input id="dailyGoalInput" type="number" min="30" max="600" step="5" />
-            </div>
-            <div class="field-row">
-              <label for="breakReminderInput">Break reminder every (minutes)</label>
-              <input id="breakReminderInput" type="number" min="15" max="180" step="5" />
-            </div>
-            <div class="toggle-grid">
-              <label class="toggle-card"><span>Strict mode</span><input id="strictModeToggle" type="checkbox" /></label>
-              <label class="toggle-card"><span>Adaptive shield</span><input id="adaptiveShieldToggle" type="checkbox" /></label>
-              <label class="toggle-card"><span>Goal reminders</span><input id="goalReminderToggle" type="checkbox" /></label>
-              <label class="toggle-card"><span>Auto break prompt</span><input id="autoBreakPromptToggle" type="checkbox" /></label>
-              <label class="toggle-card"><span>Auto-open camera watcher</span><input id="autoOpenMonitorToggle" type="checkbox" /></label>
-            </div>
-          </div>
-
-          <div class="section-block">
-            <div class="section-header compact">
-              <h3>Phone detection</h3>
-              <p>Control how tolerant the camera watcher is.</p>
-            </div>
-            <div class="field-row">
-              <label for="maxPhoneInput">Allowed phone check-ins per day (no alarm below this)</label>
-              <input id="maxPhoneInput" type="number" min="0" max="50" step="1" />
-            </div>
-            <div class="field-row">
-              <div class="field-row-header">
-                <label for="phoneSensitivityInput">Detection sensitivity</label>
-                <span id="phoneSensitivityValue" class="field-value">60%</span>
-              </div>
-              <input id="phoneSensitivityInput" type="range" min="30" max="90" step="5" />
-              <p class="field-hint">Higher = fewer false alarms but may miss quick glances. Lower = catches more, but may misfire.</p>
-            </div>
-          </div>
-
-          <div class="section-block">
-            <div class="section-header compact">
-              <h3>Pomodoro</h3>
-            </div>
-            <div class="toggle-grid single">
-              <label class="toggle-card"><span>Enable Pomodoro cycle</span><input id="pomodoroEnabledToggle" type="checkbox" /></label>
-            </div>
-            <div class="field-row two-col">
-              <div>
-                <label for="pomodoroFocusInput">Focus block (min)</label>
-                <input id="pomodoroFocusInput" type="number" min="15" max="90" step="5" />
-              </div>
-              <div>
-                <label for="pomodoroBreakInput">Break block (min)</label>
-                <input id="pomodoroBreakInput" type="number" min="3" max="30" step="1" />
-              </div>
-            </div>
-          </div>
-
-          <div class="section-block">
-            <div class="section-header compact">
-              <h3>Scheduled sessions</h3>
-              <p>Automatically start a session during your study window.</p>
-            </div>
-            <div class="toggle-grid single">
-              <label class="toggle-card"><span>Enable schedule</span><input id="scheduleEnabledToggle" type="checkbox" /></label>
-            </div>
-            <div class="field-row two-col">
-              <div>
-                <label for="scheduleStartInput">Start time</label>
-                <input id="scheduleStartInput" type="time" />
-              </div>
-              <div>
-                <label for="scheduleEndInput">End time</label>
-                <input id="scheduleEndInput" type="time" />
-              </div>
-            </div>
-            <div class="day-picker" id="scheduleDaysPicker">
-              <button type="button" class="day-btn" data-day="0">S</button>
-              <button type="button" class="day-btn" data-day="1">M</button>
-              <button type="button" class="day-btn" data-day="2">T</button>
-              <button type="button" class="day-btn" data-day="3">W</button>
-              <button type="button" class="day-btn" data-day="4">T</button>
-              <button type="button" class="day-btn" data-day="5">F</button>
-              <button type="button" class="day-btn" data-day="6">S</button>
-            </div>
-          </div>
-
-          <div class="section-block">
-            <div class="section-header compact">
-              <h3>Google Sign-In setup</h3>
-              <p>If "Continue with Google" fails, get your exact setup values here.</p>
-            </div>
-            <button id="oauthInfoBtn" type="button" class="ghost-btn">Show my redirect URI &amp; Client ID</button>
-            <div id="oauthInfoBox" class="oauth-info-box hidden"></div>
-          </div>
-
-          <div id="settingsMessage" class="message-box hidden"></div>
-        </section>
-
-        <section id="todoPanel" class="card panel">
-          <div class="section-header">
-            <p class="eyebrow">To-Do</p>
-            <h3>Study tasks</h3>
-            <p>Small, focused tasks for this session — kept right next to your shield.</p>
-          </div>
-
-          <form id="todoForm" class="inline-form">
-            <input id="todoInput" type="text" maxlength="200" placeholder="e.g. Finish chapter 4 notes" />
-            <button type="submit" class="secondary-btn">Add</button>
-          </form>
-
-          <div id="todoStats" class="todo-stats"></div>
-          <div id="todoList" class="todo-list"></div>
-
-          <div class="section-block">
-            <button id="clearCompletedBtn" class="ghost-btn">Clear completed</button>
-          </div>
-
-          <div id="todoMessage" class="message-box hidden"></div>
-        </section>
-
-        <section id="historyPanel" class="card panel">
-          <div class="section-header">
-            <p class="eyebrow">History</p>
-            <h3>Recent activity</h3>
-            <p>See how your focus sessions and alerts evolved over time.</p>
-          </div>
-          <div id="activityLog" class="activity-log"></div>
-
-          <div class="section-block">
-            <div class="section-header compact">
-              <h3>Export your data</h3>
-              <p>Download a snapshot of your stats, settings, and tasks.</p>
-            </div>
-            <div class="row-actions">
-              <button id="exportJsonBtn" class="secondary-btn">Export JSON</button>
-              <button id="exportPdfBtn" class="secondary-btn">Export PDF report</button>
-            </div>
-          </div>
-        </section>
-
-        <section id="accountPanel" class="card panel">
-          <div class="section-header">
-            <p class="eyebrow">Account</p>
-            <h3>Your profile</h3>
-            <p>Review your account details and tweak the experience.</p>
-          </div>
-          <div class="profile-grid">
-            <div class="profile-item"><span>Name</span><strong id="accountName">—</strong></div>
-            <div class="profile-item"><span>Email</span><strong id="accountEmail">—</strong></div>
-            <div class="profile-item"><span>Sign-in method</span><strong id="accountBadge">—</strong></div>
-          </div>
-          <form id="profileForm" class="auth-form">
-            <div class="input-group">
-              <input id="profileName" name="name" type="text" placeholder=" " />
-              <label for="profileName">Display Name</label>
-            </div>
-            <div class="input-group">
-              <input id="profileDob" name="dob" type="date" placeholder=" " />
-              <label for="profileDob">Date of Birth</label>
-            </div>
-            <div class="input-group">
-              <input id="profilePhotoUrl" name="photoUrl" type="url" placeholder=" " />
-              <label for="profilePhotoUrl">Photo URL</label>
-            </div>
-            <button type="submit" class="btn-primary">Save profile</button>
-          </form>
-          <div class="section-block">
-            <div class="section-header compact">
-              <h3>Quick toggles</h3>
-              <p>Fast access — full controls live in the Settings tab.</p>
-            </div>
-            <div class="toggle-grid">
-              <label class="toggle-card"><span>Popup overlay</span><input id="popupEnabledToggle" type="checkbox" /></label>
-              <label class="toggle-card"><span>Audio alerts</span><input id="audioEnabledToggle" type="checkbox" /></label>
-              <label class="toggle-card"><span>Desktop notifications</span><input id="desktopNotificationsToggle" type="checkbox" /></label>
-              <label class="toggle-card"><span>Smart auto-start</span><input id="smartAutoStartToggle" type="checkbox" /></label>
-            </div>
-          </div>
-          <div class="section-block">
-            <button id="deleteAccountBtn" class="danger-btn">Delete account</button>
-          </div>
-          <div id="accountMessage" class="message-box hidden"></div>
-        </section>
-      </section>
-
-      <!-- LOADING OVERLAY -->
-      <div id="loadingOverlay" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.3); backdrop-filter:blur(2px); display:flex; align-items:center; justify-content:center; z-index:999;">
-        <div class="spinner"></div>
-      </div>
     </main>
 
     <script src="popup.js"></script>
-  </body>
+</body>
 </html>

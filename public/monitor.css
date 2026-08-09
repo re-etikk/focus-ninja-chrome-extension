@@ -486,8 +486,8 @@ body {
 }
 
 .todo-item {
-  display: flex;
-  align-items: center;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 10px;
   padding: 11px 12px;
   border-radius: 10px;
@@ -503,30 +503,79 @@ body {
   flex-shrink: 0;
 }
 
-.todo-item span {
+.todo-main {
+  min-width: 0;
+}
+
+.todo-text {
   flex: 1;
   font-size: 13px;
   word-break: break-word;
 }
 
-.todo-item.done span {
+.todo-item.done .todo-text {
   color: var(--muted);
   text-decoration: line-through;
 }
 
+.todo-meta {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.todo-countdown {
+  color: var(--accent-2);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.todo-progress {
+  height: 5px;
+  margin-top: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(23, 32, 51, 0.08);
+}
+
+.todo-progress span {
+  display: block;
+  height: 100%;
+  width: 0%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+}
+
+.todo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 5px;
+  max-width: 132px;
+}
+
 .todo-item button {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 8px;
   border: none;
   background: rgba(23, 32, 51, 0.08);
   color: var(--muted);
-  font-size: 14px;
+  font-size: 11px;
+  font-weight: 800;
   cursor: pointer;
   flex-shrink: 0;
 }
 
 .todo-item button:hover {
+  background: rgba(168, 106, 31, 0.16);
+  color: var(--accent-2);
+}
+
+.todo-item .todo-delete:hover {
   background: var(--danger);
   color: #fff;
 }
